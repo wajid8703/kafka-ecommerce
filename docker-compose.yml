@@ -109,6 +109,20 @@ services:
       - kafka
       - redis
     restart: unless-stopped
+
+  # Payment Service
+  payment-service:
+    build:
+      context: ./services/payment-service
+      dockerfile: Dockerfile
+    container_name: payment-service
+    environment:
+      - KAFKA_BROKERS=kafka:29092
+      - REDIS_URL=redis:6379
+    depends_on:
+      - kafka
+      - redis
+    restart: unless-stopped
     
   # Redis - for idempotency tracking
   redis:
