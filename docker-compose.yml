@@ -124,6 +124,19 @@ services:
       - redis
     restart: unless-stopped
     
+  # Shipping Service
+  shipping-service:
+    build:
+      context: ./services/shipping-service
+      dockerfile: Dockerfile
+    container_name: shipping-service
+    environment:
+      - KAFKA_BROKERS=kafka:29092
+      - REDIS_URL=redis:6379
+    depends_on:
+      - kafka
+      - redis
+    restart: unless-stopped
   # Redis - for idempotency tracking
   redis:
     image: redis:7-alpine

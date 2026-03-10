@@ -3,10 +3,8 @@ package kafka
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -75,41 +73,13 @@ func (p *Producer) PublishEvent(ctx context.Context, key string, event any) erro
 		Value: eventBytes,
 	}
 
-	var writeErr error
-	for attempt := range 3 {
-		writeErr = p.writer.WriteMessages(ctx, msg)
-		if writeErr == nil {
-			break
-		}
-		if !isRetryableKafkaError(writeErr) {
-			break
-		}
-		wait := time.Duration(attempt+1) * 500 * time.Millisecond
-		log.Printf("⚠ Kafka write error (attempt %d/3), retrying in %s: %v", attempt+1, wait, writeErr)
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-time.After(wait):
-		}
-	}
-	if writeErr != nil {
-		return fmt.Errorf("failed to write message: %w", writeErr)
+	err = p.writer.WriteMessages(ctx, msg)
+	if err != nil {
+		return fmt.Errorf("failed to write message: %w", err)
 	}
 
 	log.Printf("✓ Published to Kafka: topic=%s, key=%s\n", p.writer.Topic, key)
 	return nil
-}
-
-func isRetryableKafkaError(err error) bool {
-	var kafkaErr kafka.Error
-	if errors.As(err, &kafkaErr) {
-		switch kafkaErr {
-		case kafka.LeaderNotAvailable, kafka.NotLeaderForPartition,
-			kafka.RequestTimedOut, kafka.BrokerNotAvailable:
-			return true
-		}
-	}
-	return false
 }
 
 func (p *Producer) Close() error {
