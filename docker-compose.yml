@@ -137,6 +137,35 @@ services:
       - kafka
       - redis
     restart: unless-stopped
+
+  # Notification Service
+  notification-service:
+    build:
+      context: ./services/notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    environment:
+      - KAFKA_BROKERS=kafka:29092
+    depends_on:
+      - kafka
+    restart: unless-stopped
+    
+  # Analytics Service
+  analytics-service:
+    build:
+      context: ./services/analytics-service
+      dockerfile: Dockerfile
+    container_name: analytics-service
+    ports:
+      - "8090:8090"
+    environment:
+      - PORT=8090
+      - KAFKA_BROKERS=kafka:29092
+    depends_on:
+      - kafka
+    restart: unless-stopped
+
+
   # Redis - for idempotency tracking
   redis:
     image: redis:7-alpine
