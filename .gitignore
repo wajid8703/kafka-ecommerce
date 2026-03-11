@@ -1,0 +1,43 @@
+# Type this:
+```
+```
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+main
+
+# Go
+vendor/
+*.out
+*.test
+*.prof
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+*.env.local
+
+# Docker
+*.log
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+
+# Build artifacts
+dist/
+build/

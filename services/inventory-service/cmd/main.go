@@ -63,9 +63,10 @@ func main() {
 		"order.events",
 		"inventory-service-group",
 		inventoryService.ProcessOrderCreated,
+		nil,
 	)
 
-	// Start consuming in background
+	// Start consuming in the background
 	go func() {
 		if err := consumer.Start(ctx); err != nil {
 			log.Printf("Consumer error: %v\n", err)

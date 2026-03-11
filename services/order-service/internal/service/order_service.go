@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 
 	"order-service/internal/models"
-	"order-service/internal/repository"
 )
 
 // KafkaProducer interface for publishing events
@@ -16,12 +15,20 @@ type KafkaProducer interface {
 	PublishEvent(ctx context.Context, key string, event interface{}) error
 }
 
+// OrderRepository interface for data access
+type OrderRepository interface {
+	Create(ctx context.Context, order *models.Order) error
+	FindByID(ctx context.Context, id string) (*models.Order, error)
+	UpdateStatus(ctx context.Context, id string, status models.OrderStatus) error
+	CreateEvent(ctx context.Context, orderID, eventType string, eventData interface{}) error
+}
+
 type OrderService struct {
-	repo     *repository.OrderRepository
+	repo     OrderRepository
 	producer KafkaProducer
 }
 
-func NewOrderService(repo *repository.OrderRepository, producer KafkaProducer) *OrderService {
+func NewOrderService(repo OrderRepository, producer KafkaProducer) *OrderService {
 	return &OrderService{
 		repo:     repo,
 		producer: producer,

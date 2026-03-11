@@ -157,9 +157,9 @@ services:
       dockerfile: Dockerfile
     container_name: analytics-service
     ports:
-      - "8090:8090"
+      - "8091:8091"
     environment:
-      - PORT=8090
+      - PORT=8091
       - KAFKA_BROKERS=kafka:29092
     depends_on:
       - kafka
