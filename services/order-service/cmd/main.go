@@ -19,10 +19,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type KafkaProducer struct {
-	brokers []string
-	topic   string
-}
+type KafkaProducer struct{}
 
 func (p *KafkaProducer) PublishEvent(ctx context.Context, key string, event interface{}) error {
 
