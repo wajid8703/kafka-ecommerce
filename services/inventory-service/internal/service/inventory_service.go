@@ -75,7 +75,9 @@ func (s *InventoryService) ProcessOrderCreated(ctx context.Context, eventData []
 			log.Printf("❌ Inventory reservation failed for order %s: %v\n", event.OrderID, err)
 
 			// Mark as processed to avoid retries
-			s.idempotencyChecker.MarkProcessed(ctx, event.EventID)
+			if err := s.idempotencyChecker.MarkProcessed(ctx, event.EventID); err != nil {
+				log.Printf("⚠️  Failed to mark event as processed: %v\n", err)
+			}
 			return nil
 		}
 	}
