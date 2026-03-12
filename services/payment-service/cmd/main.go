@@ -8,8 +8,7 @@ import (
 	"syscall"
 
 	"payment-service/internal/idempotency"
-	kafkaConsumer "payment-service/internal/kafka"
-	kafkaProducer "payment-service/internal/kafka"
+	"payment-service/internal/kafka"
 	"payment-service/internal/service"
 )
 
@@ -20,8 +19,12 @@ func main() {
 	ctx := context.Background()
 
 	// Initialize Kafka producer
-	producer := kafkaProducer.NewProducer([]string{kafkaBrokers}, "payment.events")
-	defer producer.Close()
+	producer := kafka.NewProducer([]string{kafkaBrokers}, "payment.events")
+	defer func() {
+		if err := producer.Close(); err != nil {
+			log.Printf("Failed to close Kafka producer: %v", err)
+		}
+	}()
 
 	// Initialize Redis idempotency checker
 	idempotencyChecker := idempotency.NewRedisChecker(redisAddr)
@@ -30,7 +33,7 @@ func main() {
 	paymentService := service.NewPaymentService(producer, idempotencyChecker)
 
 	// Start Kafka consumer
-	consumer := kafkaConsumer.NewConsumer(
+	consumer := kafka.NewConsumer(
 		[]string{kafkaBrokers},
 		"inventory.events",
 		"payment-service-group",

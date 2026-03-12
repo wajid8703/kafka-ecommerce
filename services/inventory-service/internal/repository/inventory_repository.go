@@ -30,7 +30,7 @@ func (r *InventoryRepository) ReserveStock(ctx context.Context, orderID, product
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	// Check available stock
 	var available int
