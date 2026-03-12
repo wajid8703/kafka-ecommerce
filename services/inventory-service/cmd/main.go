@@ -11,8 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"inventory-service/internal/idempotency"
-	kafkaConsumer "inventory-service/internal/kafka"
-	kafkaProducer "inventory-service/internal/kafka"
+	"inventory-service/internal/kafka"
 	"inventory-service/internal/repository"
 	"inventory-service/internal/service"
 )
@@ -47,8 +46,13 @@ func main() {
 	}
 
 	// Initialize Kafka producer
-	producer := kafkaProducer.NewProducer([]string{kafkaBrokers}, "inventory.events")
-	defer producer.Close()
+	producer := kafka.NewProducer([]string{kafkaBrokers}, "inventory.events")
+	defer func(producer *kafka.Producer) {
+		err := producer.Close()
+		if err != nil {
+			log.Fatalf("Failed to close Kafka producer: %v", err)
+		}
+	}(producer)
 
 	// Initialize Redis idempotency checker
 	idempotencyChecker := idempotency.NewRedisChecker(redisAddr)
@@ -58,7 +62,7 @@ func main() {
 	inventoryService := service.NewInventoryService(inventoryRepo, producer, idempotencyChecker)
 
 	// Start Kafka consumer
-	consumer := kafkaConsumer.NewConsumer(
+	consumer := kafka.NewConsumer(
 		[]string{kafkaBrokers},
 		"order.events",
 		"inventory-service-group",

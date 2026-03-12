@@ -58,7 +58,10 @@ func main() {
 	r.Use(middleware.Recoverer)
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("OK"))
+		_, err := w.Write([]byte("OK"))
+		if err != nil {
+			return
+		}
 	})
 
 	r.Get("/api/metrics", analyticsHandler.GetMetrics)

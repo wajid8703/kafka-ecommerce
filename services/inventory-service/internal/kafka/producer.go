@@ -36,7 +36,11 @@ func ensureTopic(brokers []string, topic string) {
 		log.Printf("⚠ Could not connect to Kafka to ensure topic: %v", err)
 		return
 	}
-	defer conn.Close()
+	defer func(conn *kafka.Conn) {
+		if err := conn.Close(); err != nil {
+			log.Printf("⚠ Failed to close Kafka connection: %v", err)
+		}
+	}(conn)
 
 	controller, err := conn.Controller()
 	if err != nil {
@@ -49,7 +53,11 @@ func ensureTopic(brokers []string, topic string) {
 		log.Printf("⚠ Could not connect to Kafka controller: %v", err)
 		return
 	}
-	defer controllerConn.Close()
+	defer func(controllerConn *kafka.Conn) {
+		if err := controllerConn.Close(); err != nil {
+			log.Printf("⚠ Failed to close Kafka controller connection: %v", err)
+		}
+	}(controllerConn)
 
 	err = controllerConn.CreateTopics(kafka.TopicConfig{
 		Topic:             topic,

@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"log"
 	"net/http"
 	"order-service/internal/handlers"
@@ -15,6 +13,9 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -51,7 +52,12 @@ func main() {
 	}
 
 	producer := kafkaProducer.NewProducer([]string{kafkaBrokers}, "order.events")
-	defer producer.Close()
+	defer func(producer *kafkaProducer.Producer) {
+		err := producer.Close()
+		if err != nil {
+			log.Fatalf("Failed to close Kafka producer: %v", err)
+		}
+	}(producer)
 
 	orderRepo := repository.NewOrderRepository(dbPool)
 	orderService := service.NewOrderService(orderRepo, producer)
